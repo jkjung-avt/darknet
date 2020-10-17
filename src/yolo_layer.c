@@ -311,7 +311,7 @@ void delta_yolo_class(float *output, float *delta, int index, int class_id, int 
     int n;
     if (delta[index + stride*class_id]){
         float y_true = 1;
-        if(label_smooth_eps) y_true = y_true *  (1 - label_smooth_eps) + 0.5*label_smooth_eps;
+        if (label_smooth_eps) y_true = y_true * (1 - label_smooth_eps) + label_smooth_eps / classes;
         float result_delta = y_true - output[index + stride*class_id];
         if(!isnan(result_delta) && !isinf(result_delta)) delta[index + stride*class_id] = result_delta;
         //delta[index + stride*class_id] = 1 - output[index + stride*class_id];
@@ -344,11 +344,13 @@ void delta_yolo_class(float *output, float *delta, int index, int class_id, int 
         // default
         for (n = 0; n < classes; ++n) {
             float y_true = ((n == class_id) ? 1 : 0);
-            if (label_smooth_eps) y_true = y_true *  (1 - label_smooth_eps) + 0.5*label_smooth_eps;
+            if (label_smooth_eps) y_true = y_true * (1 - label_smooth_eps) + label_smooth_eps / classes;
             float result_delta = y_true - output[index + stride*n];
             if (!isnan(result_delta) && !isinf(result_delta)) delta[index + stride*n] = result_delta;
 
-            if (classes_multipliers && n == class_id) delta[index + stride*class_id] *= classes_multipliers[class_id] * cls_normalizer;
+            //if (classes_multipliers && n == class_id) delta[index + stride*class_id] *= classes_multipliers[class_id] * cls_normalizer;
+            if (classes_multipliers && n == class_id) delta[index + stride*class_id] *= classes_multipliers[class_id];
+            delta[index + stride*class_id] *= cls_normalizer;
             if (n == class_id && avg_cat) *avg_cat += output[index + stride*n];
         }
     }
