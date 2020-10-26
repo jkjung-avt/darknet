@@ -309,17 +309,19 @@ void averages_yolo_deltas(int class_index, int box_index, int stride, int classe
 void delta_yolo_class(float *output, float *delta, int index, int class_id, int classes, int stride, float *avg_cat, int focal_loss, float label_smooth_eps, float *classes_multipliers, float cls_normalizer)
 {
     int n;
-    if (delta[index + stride*class_id]){
-        float y_true = 1;
-        if (label_smooth_eps) y_true = y_true * (1 - label_smooth_eps) + label_smooth_eps / classes;
-        float result_delta = y_true - output[index + stride*class_id];
-        if(!isnan(result_delta) && !isinf(result_delta)) delta[index + stride*class_id] = result_delta;
-        //delta[index + stride*class_id] = 1 - output[index + stride*class_id];
 
-        if (classes_multipliers) delta[index + stride*class_id] *= classes_multipliers[class_id];
-        if(avg_cat) *avg_cat += output[index + stride*class_id];
-        return;
-    }
+    //if (delta[index + stride*class_id]){
+    //    float y_true = 1;
+    //    if (label_smooth_eps) y_true = y_true * (1 - label_smooth_eps) + label_smooth_eps / classes;
+    //    float result_delta = y_true - output[index + stride*class_id];
+    //    if(!isnan(result_delta) && !isinf(result_delta)) delta[index + stride*class_id] = result_delta;
+
+    //    if (classes_multipliers) delta[index + stride*class_id] *= classes_multipliers[class_id];
+    //    delta[index + stride*class_id] *= cls_normalizer;
+    //    if(avg_cat) *avg_cat += output[index + stride*class_id];
+    //    return;
+    //}
+
     // Focal loss
     if (focal_loss) {
         // Focal Loss
@@ -349,8 +351,8 @@ void delta_yolo_class(float *output, float *delta, int index, int class_id, int 
             if (!isnan(result_delta) && !isinf(result_delta)) delta[index + stride*n] = result_delta;
 
             //if (classes_multipliers && n == class_id) delta[index + stride*class_id] *= classes_multipliers[class_id] * cls_normalizer;
-            if (classes_multipliers && n == class_id) delta[index + stride*class_id] *= classes_multipliers[class_id];
-            delta[index + stride*class_id] *= cls_normalizer;
+            if (classes_multipliers) delta[index + stride*n] *= classes_multipliers[class_id];
+            delta[index + stride*n] *= cls_normalizer;
             if (n == class_id && avg_cat) *avg_cat += output[index + stride*n];
         }
     }
