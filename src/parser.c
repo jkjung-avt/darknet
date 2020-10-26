@@ -422,16 +422,27 @@ float *get_classes_multipliers(char *cpc, const int classes, const float max_del
             printf(" number of values in counters_per_class = %d doesn't match with classes = %d \n", classes_counters, classes);
             exit(0);
         }
-        float max_counter = 0;
+        float max_counter = 0.0;
         int i;
+        int counters_total = 0;
         for (i = 0; i < classes_counters; ++i) {
             if (counters_per_class[i] < 1) counters_per_class[i] = 1;
             if (max_counter < counters_per_class[i]) max_counter = counters_per_class[i];
+            counters_total += counters_per_class[i];
         }
         classes_multipliers = (float *)calloc(classes_counters, sizeof(float));
         for (i = 0; i < classes_counters; ++i) {
-            classes_multipliers[i] = max_counter / counters_per_class[i];
-            if(classes_multipliers[i] > max_delta) classes_multipliers[i] = max_delta;
+            //classes_multipliers[i] = max_counter / counters_per_class[i];
+            classes_multipliers[i] = log2(max_counter / counters_per_class[i]) + 1.0;
+            if (classes_multipliers[i] < 1.0) classes_multipliers[i] = 1.0;
+            if (classes_multipliers[i] > max_delta) classes_multipliers[i] = max_delta;
+        }
+        float normalizer = 0.0;
+        for (i = 0; i < classes_counters; ++i) {
+            normalizer += classes_multipliers[i] * counters_per_class[i] / counters_total;
+        }
+        for (i = 0; i < classes_counters; ++i) {
+            classes_multipliers[i] /= normalizer;
         }
         free(counters_per_class);
         printf(" classes_multipliers: ");
