@@ -192,7 +192,8 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
     //while(i*imgs < N*120){
     while (get_current_iteration(net) < net.max_batches) {
-        if (l.random && count++ % 10 == 0) {
+        const int iteration = get_current_iteration(net);
+        if (l.random && iteration > net.burn_in && count++ % 10 == 0) {
             float rand_coef = 1.4;
             if (l.random != 1.0) rand_coef = l.random;
             printf("Resizing, random_coef = %.2f \n", rand_coef);
@@ -295,7 +296,6 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (avg_loss < 0 || avg_loss != avg_loss) avg_loss = loss;    // if(-inf or nan)
         avg_loss = avg_loss*.9 + loss*.1;
 
-        const int iteration = get_current_iteration(net);
         //i = get_current_batch(net);
 
         int calc_map_for_each = 1 * train_images_num / (net.batch * net.subdivisions);  // calculate mAP for each 4 Epochs
