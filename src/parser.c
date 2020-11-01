@@ -471,7 +471,8 @@ layer parse_yolo(list *options, size_params params)
     l.show_details = option_find_int_quiet(options, "show_details", 1);
     l.max_delta = option_find_float_quiet(options, "max_delta", FLT_MAX);   // set 10
     char *cpc = option_find_str(options, "counters_per_class", 0);
-    l.classes_multipliers = get_classes_multipliers(cpc, classes, l.max_delta);
+    //l.classes_multipliers = get_classes_multipliers(cpc, classes, l.max_delta);
+    l.classes_multipliers = get_classes_multipliers(cpc, classes, 20.0);
 
     l.label_smooth_eps = option_find_float_quiet(options, "label_smooth_eps", 0.0f);
     l.scale_x_y = option_find_float_quiet(options, "scale_x_y", 1);
