@@ -6,7 +6,8 @@ using a trained IEC_Traffic detector (yolov4) model.
 Example usage:
 
 $ cd ${HOME}/project/darknet
-$ python3 python/label_ivs.py \
+# python3 -m pip install -e .
+$ python3 py3darknet/label_ivs.py \
               --cfg cfg/yolov4-ivs.cfg \
               --weights backup/yolov4-ivs_best.weights \
               --gpu 0 \
@@ -19,11 +20,12 @@ $ python3 python/label_ivs.py \
 
 
 import os
+import random
 import argparse
 from pathlib import Path
 
 import cv2
-from python.darknet import Detector
+from py3darknet import Detector
 
 
 DEFAULT_CFG = 'cfg/yolov4-jk1.cfg'
@@ -161,6 +163,7 @@ def main():
     jpg_paths = list(src_path.rglob('*.jpg')) + list(src_path.rglob('*.JPG'))
     if not jpg_paths:
         raise SysetemExit('no jpg/JPG files to process!')
+    random.shuffle(jpg_paths)
 
     jpeg_dir_path = None
     if args.out_jpeg_dir:
@@ -171,8 +174,10 @@ def main():
 
     names = get_names(args.names)
 
+    print('Initiating the IEC_Traffic object detector...')
     detector = Detector(args.cfg, args.weights, args.gpu)
 
+    print('Starting to process jpg images...')
     count = 0
     for jpg_path in jpg_paths:
         res = detector.detect(jpg_path.as_posix(), thresh=args.conf)
@@ -183,6 +188,7 @@ def main():
             xml_path = xml_dir_path / (jpg_path.stem + '.xml')
             save_xml(jpg_path, xml_path, res, names)
         if args.max_outputs > 0 and count >= args.max_outputs:
+            print('Stopping at count=%d...' % count)
             break
 
     print('Done.')

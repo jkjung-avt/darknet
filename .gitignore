@@ -69,3 +69,4 @@ counters_per_class.txt
 tags
 
 *.pyc
+*.egg-info/
