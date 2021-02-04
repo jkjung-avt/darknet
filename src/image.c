@@ -1386,6 +1386,36 @@ image make_attention_image(int img_size, float *original_delta_cpu, float *origi
     return attention_img;
 }
 
+#if 1
+image resize_image(image im, int w, int h)
+{
+    if (im.w == w && im.h == h) return copy_image(im);
+
+    image resized = make_image(w, h, im.c);
+    int r, c, k;
+    float w_scale  = (float) (im.w-1) / (w-1);
+    float h_scale  = (float) (im.h-1) / (h-1);
+    for (k = 0; k < im.c; ++k) {
+        for (r = 0; r < h; ++r) {
+            for (c = 0; c < w; ++c) {
+                float val = 0;
+                float sx = c * w_scale, sy = r * h_scale;
+                if (c == w-1)  sx = im.w-1;
+                if (r == h-1)  sy = im.h-1;
+                int ix1 = (int) floorf(sx), ix2 = (int) ceilf(sx);
+                int iy1 = (int) floorf(sy), iy2 = (int) ceilf(sy);
+                float dx = sx - ix1, dy = sy - iy1;
+                val =  (1 - dy) * ((1 - dx) * get_pixel(im, ix1, iy1, k) +
+                                   dx * get_pixel(im, ix2, iy1, k)) +
+                            dy  * ((1 - dx) * get_pixel(im, ix1, iy2, k) +
+                                   dx * get_pixel(im, ix2, iy2, k));
+                set_pixel(resized, c, r, k, val);
+            }
+        }
+    }
+    return resized;
+}
+#else /* old code */
 image resize_image(image im, int w, int h)
 {
     if (im.w == w && im.h == h) return copy_image(im);
@@ -1431,7 +1461,7 @@ image resize_image(image im, int w, int h)
     free_image(part);
     return resized;
 }
-
+#endif
 
 void test_resize(char *filename)
 {
